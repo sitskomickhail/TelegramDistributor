@@ -54,6 +54,11 @@ namespace TelegramLibrary
             await _client.ConnectAsync();
         }
 
+        public void LogOut()
+        {
+            _client.Dispose();
+        }
+
         public async Task GetCodeAuthenticateAsync()
         {
             await _client.ConnectAsync();

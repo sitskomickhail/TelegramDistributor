@@ -92,7 +92,8 @@
                         </Grid.RowDefinitions>
                         <TextBox Text="{Binding PhoneNumber}"
                                  FontSize="14"
-                                 Margin="5"/>
+                                 Margin="5"
+                                 IsEnabled="{Binding IsCanChangeNumber}"/>
                         <Button Content="Войти" 
                                 Grid.Row="1"
                                 Margin="5"

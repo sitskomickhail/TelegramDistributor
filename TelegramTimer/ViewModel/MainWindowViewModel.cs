@@ -234,6 +234,12 @@ namespace TelegramTimer.ViewModel
             get { return _isStopEnabled; }
             set { _isStopEnabled = value; OnPropertyChanged(); }
         }
+        private bool _isCanChangeNumber;
+        public bool IsCanChangeNumber
+        {
+            get { return _isCanChangeNumber; }
+            set { _isCanChangeNumber = value; OnPropertyChanged(); }
+        }
 
 
 
@@ -293,6 +299,7 @@ namespace TelegramTimer.ViewModel
             StartDateTime = DateTime.Now;
 
             IsSetCode = false;
+            IsCanChangeNumber = true;
             IsLoggEnabled = true;
             IsStartEnabled = false;
             IsStopEnabled = false;
@@ -333,7 +340,9 @@ namespace TelegramTimer.ViewModel
                             MySelectedItem = ChannelsNames?[0];
                             IsProgramStarted = true;
                             IsStartEnabled = true;
+                            IsCanChangeNumber = false;
                             TeleStatus = "Вы вошли успешно!!! ";
+                            TelegramContext.LogOut();
                             return;
                         }
                     }
@@ -372,12 +381,14 @@ namespace TelegramTimer.ViewModel
                     TeleStatus = "Вы вошли успешно!!!";
                     IsProgramStarted = true;
                     IsStartEnabled = true;
+                    IsCanChangeNumber = false;
 
                     TLChannelFulls = await TelegramContext.GetFullInfoCannelsAsync();
                     foreach (var channel in TLChannelFulls)
                     {
                         ChannelsNames.Add(channel.About);
                     }
+                    TelegramContext.LogOut();
                     MySelectedItem = ChannelsNames?[0];
                 }
                 catch (Exception ex)
@@ -405,6 +416,8 @@ namespace TelegramTimer.ViewModel
                         if (item.Status == "Ожидание...")
                             if (item.DateTimeSending <= DateTime.Now)
                             {
+                                TelegramContext = new TelegramLogic(PhoneNumber);
+                                await TelegramContext.LogInAsync();
                                 bool result = false;
                                 string exception = null;
                                 try
@@ -434,6 +447,7 @@ namespace TelegramTimer.ViewModel
                                     DataWorker.AddInfoToDB(PhoneNumber, item.SendingChannel, String.IsNullOrEmpty(item?.PhotoPath),
                                                         item?.SendingText, item.DateTimeSending, false, exception);
                                 }
+                                TelegramContext.LogOut();
                             }
                     }
                     Thread.Sleep(15000);
@@ -443,8 +457,8 @@ namespace TelegramTimer.ViewModel
 
         public void OnStopCommandExecute(object obj)
         {
-            IsStartEnabled = false;
-            IsStopEnabled = true;
+            IsStartEnabled = true;
+            IsStopEnabled = false;
             TeleStatus = "Рассылка остановлена!";
         }
 
@@ -456,7 +470,7 @@ namespace TelegramTimer.ViewModel
                 {
                     int hour = Int32.Parse(Hours);
                     int minutes = Int32.Parse(Minutes);
-
+              
                     DataGridQueries.Add(new DataGridQueryModel()
                     {
                         DateTimeSending = new DateTime(StartDateTime.Year, StartDateTime.Month, StartDateTime.Day, hour, minutes, 0),
@@ -470,7 +484,7 @@ namespace TelegramTimer.ViewModel
                     TextSending = String.Empty;
 
                     WaitingRequest++;
-                    TeleStatus = "Запись добавлена в \nочрередь";
+                    TeleStatus = "Запись добавлена в \nочередь";
                 }
                 else
                     TeleStatus = "Добавьте текст\nили фото";
